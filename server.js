@@ -210,8 +210,8 @@ app.delete('/api/applications/:id', (req, res) => {
     res.json({ success: true });
 });
 
-// Catch-all маршрут для HTML файлов
-app.get('*.html', (req, res) => {
+// Catch-all маршрут для HTML файлов (использует regex)
+app.get(/\.html$/, (req, res) => {
     const htmlFile = path.join(__dirname, req.url);
     res.sendFile(htmlFile, (err) => {
         if (err) {
