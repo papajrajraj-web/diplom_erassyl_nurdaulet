@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const DB_FILE = path.join(__dirname, 'db.json');
 
 app.use(cors());
@@ -161,8 +161,12 @@ app.delete('/api/applications/:id', (req, res) => {
 });
 
 // ─── Запуск ───────────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
-    console.log(`\n✅ Сервер іске қосылды: http://localhost:${PORT}`);
-    console.log(`📁 Деректер сақталады: db.json`);
-    console.log(`👤 Әкімші: admin@komek.kz / admin123\n`);
-});
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`\n✅ Сервер іске қосылды: http://localhost:${PORT}`);
+        console.log(`📁 Деректер сақталады: db.json`);
+        console.log(`👤 Әкімші: admin@komek.kz / admin123\n`);
+    });
+}
+
+module.exports = app;

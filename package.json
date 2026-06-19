@@ -4,6 +4,7 @@
   "description": "Қазақстан Республикасының әлеуметтік көмек түрлері туралы ақпараттандыруға арналған веб-қосымша.",
   "main": "index.js",
   "scripts": {
+    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
