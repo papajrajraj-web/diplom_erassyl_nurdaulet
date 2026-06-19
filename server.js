@@ -11,35 +11,65 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname)); // отдаёт все HTML/CSS/JS файлы
 
-// ─── Инициализация базы данных ───────────────────────────────────────────────
+// ─── In-Memory Database (для Vercel) ───────────────────────────────────────────
+let db = null;
+
 function initDB() {
-    if (!fs.existsSync(DB_FILE)) {
-        const initial = {
-            users: [
-                {
-                    id: 1,
-                    fullName: 'Жүйе әкімшісі',
-                    iin: '000000000000',
-                    email: 'admin@komek.kz',
-                    phone: '+77001112233',
-                    password: 'admin123',
-                    role: 'admin',
-                    createdAt: new Date().toISOString()
-                }
-            ],
-            applications: []
-        };
-        fs.writeFileSync(DB_FILE, JSON.stringify(initial, null, 2));
-        console.log('📁 db.json жасалды (admin@komek.kz / admin123)');
+    if (db) return; // Уже инициализирована
+    
+    // Пытаемся прочитать db.json локально
+    try {
+        if (fs.existsSync(DB_FILE)) {
+            db = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
+            console.log('📁 db.json загружен из файла');
+            return;
+        }
+    } catch (err) {
+        console.log('⚠️ Не удалось загрузить db.json, используется в-памяти БД');
+    }
+    
+    // Инициализация в-памяти БД
+    db = {
+        users: [
+            {
+                id: 1,
+                fullName: 'Жүйе әкімшісі',
+                iin: '000000000000',
+                email: 'admin@komek.kz',
+                phone: '+77001112233',
+                password: 'admin123',
+                role: 'admin',
+                createdAt: new Date().toISOString()
+            }
+        ],
+        applications: []
+    };
+    console.log('✅ В-памяти БД инициализирована (admin@komek.kz / admin123)');
+    
+    // Пытаемся записать на локальной машине (не на Vercel)
+    try {
+        if (process.env.NODE_ENV !== 'production') {
+            fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+        }
+    } catch (err) {
+        // Ignoring write errors on Vercel
     }
 }
 
 function readDB() {
-    return JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
+    return db;
 }
 
 function writeDB(data) {
-    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+    db = data;
+    // Пытаемся записать локально
+    try {
+        if (process.env.NODE_ENV !== 'production') {
+            fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+        }
+    } catch (err) {
+        // Ignoring write errors on Vercel
+    }
 }
 
 initDB();
