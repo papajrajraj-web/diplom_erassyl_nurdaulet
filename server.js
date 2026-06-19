@@ -9,7 +9,12 @@ const DB_FILE = path.join(__dirname, 'db.json');
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(__dirname)); // отдаёт все HTML/CSS/JS файлы
+
+// Статические файлы - важно до API маршрутов!
+app.use(express.static(__dirname));
+app.use('/css', express.static(path.join(__dirname, 'css')));
+app.use('/js', express.static(path.join(__dirname, 'js')));
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 // ─── In-Memory Database (для Vercel) ───────────────────────────────────────────
 let db = null;
@@ -79,6 +84,14 @@ initDB();
 // GET / - обслуживает index.html
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Cache control для статических файлов
+app.use((req, res, next) => {
+    if (req.url.endsWith('.css') || req.url.endsWith('.js') || req.url.endsWith('.png') || req.url.endsWith('.jpg') || req.url.endsWith('.svg')) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000');
+    }
+    next();
 });
 
 // ─── ПАЙДАЛАНУШЫЛАР (Users) ───────────────────────────────────────────────────
@@ -195,6 +208,16 @@ app.delete('/api/applications/:id', (req, res) => {
     db.applications = db.applications.filter(a => a.id !== Number(req.params.id));
     writeDB(db);
     res.json({ success: true });
+});
+
+// Catch-all маршрут для HTML файлов
+app.get('*.html', (req, res) => {
+    const htmlFile = path.join(__dirname, req.url);
+    res.sendFile(htmlFile, (err) => {
+        if (err) {
+            res.sendFile(path.join(__dirname, 'index.html'));
+        }
+    });
 });
 
 // ─── Запуск ───────────────────────────────────────────────────────────────────
