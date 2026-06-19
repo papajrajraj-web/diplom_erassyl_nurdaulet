@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Көмек туралы толық ақпарат | ӘлеуметКөмек</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div class="ornament-band"></div>
+
+    <header>
+        <div class="top-bar">
+            <div class="container">
+                <span data-i18n="topbar_phone">Сенім телефоны: 1414 (тегін)</span>
+                <span data-i18n="topbar_hours">Жұмыс уақыты: Дс-Жм 09:00 - 18:00</span>
+            </div>
+        </div>
+        <div class="container">
+            <div class="nav-bar">
+                <a href="index.html" class="logo">
+                    <div class="logo-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E8C97A" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                    </div>
+                    <span>ӘлеуметКөмек
+                        <span class="logo-sub">Әлеуметтік көмек порталы</span>
+                    </span>
+                </a>
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Басты бет</a></li>
+                        <li><a href="aids.html" class="active">Көмек түрлері</a></li>
+                        <li><a href="apply.html">Өтініш беру</a></li>
+                        <li><a href="assistant.html">ЖИ Кеңесші</a></li>
+                        <li><a href="map.html">ЦОН картасы</a></li>
+                        <li><a href="about.html">Байланыс</a></li>
+                        <li id="nav-login"><a href="login.html">Кіру</a></li>
+                        <li id="nav-cabinet" style="display:none;"><a href="cabinet.html">Жеке кабинет</a></li>
+                        <li id="nav-admin" style="display:none;"><a href="admin.html">Әкімші</a></li>
+                        <li id="nav-logout" style="display:none;"><a href="#" onclick="AUTH.logout(); return false;">Шығу</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div class="detail-header">
+        <div class="container">
+            <div id="header-content">
+                <!-- JavaScript арқылы -->
+            </div>
+        </div>
+    </div>
+
+    <section style="padding-top: 0;">
+        <div class="container">
+            <div class="detail-content" id="detail-content">
+                <!-- JavaScript арқылы -->
+            </div>
+            <div class="text-center mt-20" style="margin-top:30px;">
+                <a href="aids.html" class="btn btn-outline" data-i18n="detail_back">← Барлық көмек түрлеріне оралу</a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2026 ӘлеуметКөмек порталы. Барлық құқықтар қорғалған.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/data.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/i18n.js"></script>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const aidId = parseInt(params.get('id'));
+        const aid = aidTypes.find(a => a.id === aidId);
+
+        function renderDetail() {
+            if (aid) {
+                const title = I18N.aidField(aid, 'title');
+                const desc  = I18N.aidField(aid, 'shortDesc');
+                const eligibility = I18N.aidField(aid, 'eligibility');
+                const documents   = I18N.aidField(aid, 'documents');
+                const amount      = I18N.aidField(aid, 'amount');
+                const howTo       = I18N.aidField(aid, 'how_to_apply');
+                const duration    = I18N.aidField(aid, 'duration');
+
+                document.getElementById('header-content').innerHTML = `
+                    <div style="font-size: 60px; margin-bottom: 15px;">${aid.icon}</div>
+                    <h1>${title}</h1>
+                    <p style="font-size: 17px; opacity: 0.95; max-width: 700px;">${desc}</p>
+                `;
+
+                document.getElementById('detail-content').innerHTML = `
+                    <h2>${I18N.t('detail_conditions')}</h2>
+                    <ol>${eligibility.map(e => `<li>${e}</li>`).join('')}</ol>
+
+                    <h2>${I18N.t('detail_documents')}</h2>
+                    <ol>${documents.map(d => `<li>${d}</li>`).join('')}</ol>
+
+                    <h2>${I18N.t('detail_amount')}</h2>
+                    <div class="info-box">${amount}</div>
+
+                    <h2>${I18N.t('detail_how')}</h2>
+                    <p>${howTo}</p>
+
+                    <h2>${I18N.t('detail_duration')}</h2>
+                    <p>${duration}</p>
+
+                    <div class="text-center" style="margin-top: 30px;">
+                        <a href="apply.html?aid=${aid.id}" class="btn btn-primary">${I18N.t('detail_apply_btn')}</a>
+                    </div>
+                `;
+                document.title = `${title} | ӘлеуметКөмек`;
+            } else {
+                document.getElementById('detail-content').innerHTML = `
+                    <div class="alert alert-danger">
+                        ${I18N.t('detail_not_found')} <a href="aids.html">${I18N.t('detail_back')}</a>
+                    </div>
+                `;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', renderDetail);
+        const _origSetLang = I18N.setLang.bind(I18N);
+        I18N.setLang = function(lang) { _origSetLang(lang); renderDetail(); };
+    </script>
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Әлеуметтік көмек порталы | Басты бет</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div class="ornament-band"></div>
+
+    <!-- Шапка -->
+    <header>
+        <div class="top-bar">
+            <div class="container">
+                <span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.68A2 2 0 012 .84h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+                    <span data-i18n="topbar_phone">Сенім телефоны: 1414 (тегін)</span>
+                </span>
+                <span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                    <span data-i18n="topbar_hours">Жұмыс уақыты: Дс–Жм, 09:00–18:00</span>
+                </span>
+            </div>
+        </div>
+        <div class="container">
+            <div class="nav-bar">
+                <a href="index.html" class="logo">
+                    <div class="logo-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E8C97A" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                    </div>
+                    <span>ӘлеуметКөмек
+                        <span class="logo-sub">Әлеуметтік көмек порталы</span>
+                    </span>
+                </a>
+                <nav>
+                    <ul>
+                        <li><a href="index.html" class="active">Басты бет</a></li>
+                        <li><a href="aids.html">Көмек түрлері</a></li>
+                        <li><a href="apply.html">Өтініш беру</a></li>
+                        <li><a href="assistant.html">ЖИ Кеңесші</a></li>
+                        <li><a href="map.html">ЦОН картасы</a></li>
+                        <li><a href="about.html">Байланыс</a></li>
+                        <li id="nav-login"><a href="login.html">Кіру</a></li>
+                        <li id="nav-cabinet" style="display:none;"><a href="cabinet.html">Жеке кабинет</a></li>
+                        <li id="nav-admin" style="display:none;"><a href="admin.html">Әкімші</a></li>
+                        <li id="nav-logout" style="display:none;"><a href="#" onclick="AUTH.logout(); return false;">Шығу</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-inner">
+                <div class="hero-text">
+                    <div class="hero-eyebrow" data-i18n="hero_eyebrow">Қазақстан Республикасы</div>
+                    <h1 data-i18n="hero_title">Мемлекеттік <em>әлеуметтік</em> көмек порталы</h1>
+                    <p data-i18n="hero_subtitle">Мемлекет тарапынан көрсетілетін барлық әлеуметтік көмек түрлері туралы ақпарат алыңыз және онлайн өтініш беріңіз.</p>
+                    <div class="hero-buttons">
+                        <a href="aids.html" class="btn btn-accent" data-i18n="btn_view_aids">Көмек түрлерін қарау</a>
+                        <a href="apply.html" class="btn btn-outline" data-i18n="btn_apply_hero">Өтініш беру</a>
+                        <a href="assistant.html" class="btn btn-outline" data-i18n="btn_assistant_hero">ЖИ Кеңесші</a>
+                    </div>
+                </div>
+                <div class="hero-stat-box">
+                    <div class="hero-stat-item">
+                        <span class="hero-stat-num">9+</span>
+                        <span class="hero-stat-label" data-i18n="stat_types">Көмек түрі</span>
+                    </div>
+                    <div class="hero-stat-item">
+                        <span class="hero-stat-num">141К</span>
+                        <span class="hero-stat-label" data-i18n="stat_recipients">АӘК алушылар</span>
+                    </div>
+                    <div class="hero-stat-item">
+                        <span class="hero-stat-num">67</span>
+                        <span class="hero-stat-label" data-i18n="stat_budget">млрд теңге</span>
+                    </div>
+                    <div class="hero-stat-item">
+                        <span class="hero-stat-num">24/7</span>
+                        <span class="hero-stat-label" data-i18n="stat_online">Онлайн</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Көмек түрлері -->
+    <section>
+        <div class="container">
+            <div class="section-label" data-i18n="section_aids_label">Қызметтер</div>
+            <h2 class="section-title" data-i18n="section_aids_title">Негізгі әлеуметтік көмек түрлері</h2>
+            <p class="section-subtitle" data-i18n="section_aids_sub">Қазақстан Республикасының азаматтары ала алатын мемлекеттік көмек</p>
+            <div class="cards-grid" id="aids-preview"></div>
+            <div class="text-center mt-20" style="margin-top:40px;">
+                <a href="aids.html" class="btn btn-primary" data-i18n="btn_all_aids">Барлық көмек түрлерін көру →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Қалай жұмыс істейді -->
+    <section style="background: white; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+        <div class="container">
+            <div class="section-label" data-i18n="section_how_label">Процесс</div>
+            <h2 class="section-title" data-i18n="section_how_title">Қалай өтініш беруге болады?</h2>
+            <p class="section-subtitle" data-i18n="section_how_sub">Төрт қадамда әлеуметтік көмекке өтініш беріңіз</p>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">I</div>
+                    <h3 data-i18n="step1_title">Тіркелу</h3>
+                    <p data-i18n="step1_desc">Порталда жеке есептік жазба жасаңыз және жеке кабинетке кіріңіз.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">II</div>
+                    <h3 data-i18n="step2_title">Көмек түрін таңдау</h3>
+                    <p data-i18n="step2_desc">Өзіңізге сай келетін әлеуметтік көмек түрін таңдап, шарттарымен танысыңыз.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">III</div>
+                    <h3 data-i18n="step3_title">Өтініш толтыру</h3>
+                    <p data-i18n="step3_desc">Онлайн форманы толтырып, қажетті ақпаратты енгізіңіз.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">IV</div>
+                    <h3 data-i18n="step4_title">Нәтижені күту</h3>
+                    <p data-i18n="step4_desc">Өтініштің мәртебесін жеке кабинетте қадағалап отырыңыз.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <h4>ӘлеуметКөмек</h4>
+                    <p>Қазақстан Республикасы азаматтарының әлеуметтік құқықтары туралы ақпараттық портал.</p>
+                </div>
+                <div>
+                    <h4>Сілтемелер</h4>
+                    <ul>
+                        <li><a href="index.html">Басты бет</a></li>
+                        <li><a href="aids.html">Көмек түрлері</a></li>
+                        <li><a href="apply.html">Өтініш беру</a></li>
+                        <li><a href="assistant.html">ЖИ Кеңесші</a></li>
+                        <li><a href="map.html">ЦОН картасы</a></li>
+                        <li><a href="about.html">Байланыс</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Ресми ресурстар</h4>
+                    <ul>
+                        <li><a href="https://egov.kz" target="_blank">egov.kz</a></li>
+                        <li><a href="https://enbek.kz" target="_blank">enbek.kz</a></li>
+                        <li><a href="https://www.gov.kz" target="_blank">gov.kz</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Байланыс</h4>
+                    <p>1414 (тегін)</p>
+                    <p>info@komek.kz</p>
+                    <p>Астана қ., Мәңгілік Ел даңғылы</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 ӘлеуметКөмек порталы. Барлық құқықтар қорғалған.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/data.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/i18n.js"></script>
+    <script>
+        // SVG icons for aid cards
+        const iconMap = {
+            default: `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>`,
+        };
+
+        function renderAidsPreview() {
+            const preview = document.getElementById('aids-preview');
+            preview.innerHTML = '';
+            aidTypes.slice(0, 6).forEach(aid => {
+                preview.innerHTML += `
+                    <div class="card">
+                        <div class="card-icon">
+                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        </div>
+                        <h3>${I18N.aidField(aid, 'title')}</h3>
+                        <p>${I18N.aidField(aid, 'shortDesc')}</p>
+                        <a href="aid-detail.html?id=${aid.id}" class="card-link">${I18N.t('card_more')} →</a>
+                    </div>
+                `;
+            });
+        }
+        document.addEventListener('DOMContentLoaded', renderAidsPreview);
+        const _origSetLang = I18N.setLang.bind(I18N);
+        I18N.setLang = function(lang) { _origSetLang(lang); renderAidsPreview(); };
+    </script>
+</body>
+</html>

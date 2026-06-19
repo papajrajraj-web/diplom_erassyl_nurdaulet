@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Жеке кабинет | ӘлеуметКөмек</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div class="ornament-band"></div>
+
+    <header>
+        <div class="top-bar">
+            <div class="container">
+                <span data-i18n="topbar_phone">Сенім телефоны: 1414 (тегін)</span>
+                <span data-i18n="topbar_hours">Жұмыс уақыты: Дс-Жм 09:00 - 18:00</span>
+            </div>
+        </div>
+        <div class="container">
+            <div class="nav-bar">
+                <a href="index.html" class="logo">
+                    <div class="logo-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E8C97A" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                    </div>
+                    <span>ӘлеуметКөмек
+                        <span class="logo-sub">Әлеуметтік көмек порталы</span>
+                    </span>
+                </a>
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Басты бет</a></li>
+                        <li><a href="aids.html">Көмек түрлері</a></li>
+                        <li><a href="apply.html">Өтініш беру</a></li>
+                        <li><a href="assistant.html">ЖИ Кеңесші</a></li>
+                        <li><a href="map.html">ЦОН картасы</a></li>
+                        <li><a href="about.html">Байланыс</a></li>
+                        <li id="nav-cabinet"><a href="cabinet.html" class="active">Жеке кабинет</a></li>
+                        <li id="nav-admin" style="display:none;"><a href="admin.html">Әкімші</a></li>
+                        <li id="nav-logout"><a href="#" onclick="AUTH.logout(); return false;">Шығу</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div class="cabinet-header">
+        <div class="container">
+            <h1 id="welcome-title">Қош келдіңіз!</h1>
+            <p id="welcome-subtitle" data-i18n="cab_welcome_sub">Жеке кабинетіңізде өтініштеріңізді қадағалай аласыз.</p>
+        </div>
+    </div>
+
+    <section>
+        <div class="container">
+            <div class="cabinet-grid">
+                <aside class="sidebar">
+                    <ul>
+                        <li><a href="#profile" class="tab-link active" data-tab="profile" data-i18n="cab_tab_profile">Менің профилім</a></li>
+                        <li><a href="#applications" class="tab-link" data-tab="applications" data-i18n="cab_tab_apps"> Өтініштерім</a></li>
+                        <li><a href="apply.html" data-i18n="cab_new_app">Жаңа өтініш</a></li>
+                        <li><a href="#" onclick="AUTH.logout(); return false;" data-i18n="cab_logout">Шығу</a></li>
+                    </ul>
+                </aside>
+
+                <div class="main-content">
+                    <div id="tab-profile" class="tab-content">
+                        <h2 style="margin-bottom: 25px;" data-i18n="cab_profile_h">Менің профилім</h2>
+                        <div id="profile-info"></div>
+                    </div>
+
+                    <div id="tab-applications" class="tab-content hidden">
+                        <h2 style="margin-bottom: 25px;" data-i18n="cab_apps_h">Менің өтініштерім</h2>
+                        <div id="applications-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2026 ӘлеуметКөмек порталы. Барлық құқықтар қорғалған.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/data.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/i18n.js"></script>
+    <script>
+        if (!AUTH.isLoggedIn()) {
+            window.location.href = 'login.html';
+        }
+
+        const user = AUTH.getCurrentUser();
+
+        function setWelcome() {
+            const greeting = I18N.lang === 'ru' ? 'Добро пожаловать' : 'Қош келдіңіз';
+            document.getElementById('welcome-title').textContent = `${greeting}, ${user.fullName}!`;
+        }
+
+        function renderProfile() {
+            document.getElementById('profile-info').innerHTML = `
+                <div class="table-wrapper">
+                    <table>
+                        <tr><td><strong>${I18N.t('cab_field_name')}</strong></td><td>${user.fullName}</td></tr>
+                        <tr><td><strong>${I18N.t('cab_field_iin')}</strong></td><td>${user.iin}</td></tr>
+                        <tr><td><strong>${I18N.t('cab_field_email')}</strong></td><td>${user.email}</td></tr>
+                        <tr><td><strong>${I18N.t('cab_field_phone')}</strong></td><td>${user.phone}</td></tr>
+                        <tr><td><strong>${I18N.t('cab_field_date')}</strong></td><td>${new Date(user.createdAt).toLocaleDateString()}</td></tr>
+                        <tr><td><strong>${I18N.t('cab_field_role')}</strong></td><td>${user.role === 'admin' ? I18N.t('cab_role_admin') : I18N.t('cab_role_user')}</td></tr>
+                    </table>
+                </div>
+            `;
+        }
+
+        async function renderApplications() {
+            const apps = await APPLICATIONS.getByUser(user.id);
+            const container = document.getElementById('applications-list');
+
+            if (apps.length === 0) {
+                container.innerHTML = `
+                    <div class="alert alert-info">
+                        ${I18N.t('cab_no_apps')} <a href="apply.html">${I18N.t('cab_apply_link')}</a>
+                    </div>
+                `;
+                return;
+            }
+
+            const statusMap = {
+                'Қаралуда':    { cls: 'badge-warning', key: 'status_review' },
+                'Мақұлданды':  { cls: 'badge-success', key: 'status_approved' },
+                'Қабылданбады':{ cls: 'badge-danger',  key: 'status_rejected' }
+            };
+
+            let html = `<div class="table-wrapper"><table><thead><tr>
+                <th>${I18N.t('cab_th_num')}</th><th>${I18N.t('cab_th_type')}</th>
+                <th>${I18N.t('cab_th_date')}</th><th>${I18N.t('cab_th_status')}</th>
+                <th>${I18N.t('cab_th_comment')}</th>
+            </tr></thead><tbody>`;
+
+            apps.slice().reverse().forEach((app, i) => {
+                const s = statusMap[app.status] || { cls: 'badge-info', key: null };
+                const label = s.key ? I18N.t(s.key) : app.status;
+                html += `<tr>
+                    <td>${i + 1}</td>
+                    <td>${app.aidTitle}</td>
+                    <td>${new Date(app.createdAt).toLocaleDateString()}</td>
+                    <td><span class="badge ${s.cls}">${label}</span></td>
+                    <td>${app.adminComment || '—'}</td>
+                </tr>`;
+            });
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        function refreshCabinet() {
+            setWelcome();
+            renderProfile();
+            renderApplications();
+        }
+
+        const _origSetLang = I18N.setLang.bind(I18N);
+        I18N.setLang = function(lang) { _origSetLang(lang); refreshCabinet(); };
+
+        // Табтар арасында ауыстыру
+        document.querySelectorAll('.tab-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const tab = this.dataset.tab;
+                
+                document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+                
+                this.classList.add('active');
+                document.getElementById('tab-' + tab).classList.remove('hidden');
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', refreshCabinet);
+    </script>
+</body>
+</html>

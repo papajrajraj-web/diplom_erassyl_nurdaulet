@@ -1,0 +1,168 @@
+const express = require('express');
+const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
+
+const app = express();
+const PORT = 3000;
+const DB_FILE = path.join(__dirname, 'db.json');
+
+app.use(cors());
+app.use(express.json());
+app.use(express.static(__dirname)); // отдаёт все HTML/CSS/JS файлы
+
+// ─── Инициализация базы данных ───────────────────────────────────────────────
+function initDB() {
+    if (!fs.existsSync(DB_FILE)) {
+        const initial = {
+            users: [
+                {
+                    id: 1,
+                    fullName: 'Жүйе әкімшісі',
+                    iin: '000000000000',
+                    email: 'admin@komek.kz',
+                    phone: '+77001112233',
+                    password: 'admin123',
+                    role: 'admin',
+                    createdAt: new Date().toISOString()
+                }
+            ],
+            applications: []
+        };
+        fs.writeFileSync(DB_FILE, JSON.stringify(initial, null, 2));
+        console.log('📁 db.json жасалды (admin@komek.kz / admin123)');
+    }
+}
+
+function readDB() {
+    return JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
+}
+
+function writeDB(data) {
+    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+}
+
+initDB();
+
+// ─── ПАЙДАЛАНУШЫЛАР (Users) ───────────────────────────────────────────────────
+
+// Тіркелу / Регистрация
+app.post('/api/register', (req, res) => {
+    const { fullName, iin, email, phone, password } = req.body;
+    if (!fullName || !iin || !email || !password) {
+        return res.status(400).json({ success: false, message: 'Барлық өрістерді толтырыңыз' });
+    }
+
+    const db = readDB();
+    if (db.users.find(u => u.iin === iin)) {
+        return res.status(400).json({ success: false, message: 'Бұл ЖСН (ИИН) бойынша пайдаланушы бұрыннан тіркелген' });
+    }
+    if (db.users.find(u => u.email === email)) {
+        return res.status(400).json({ success: false, message: 'Бұл email бұрыннан тіркелген' });
+    }
+
+    const newUser = {
+        id: Date.now(),
+        fullName, iin, email, phone, password,
+        role: 'user',
+        createdAt: new Date().toISOString()
+    };
+    db.users.push(newUser);
+    writeDB(db);
+
+    const { password: _, ...safeUser } = newUser;
+    res.status(201).json({ success: true, message: 'Сіз сәтті тіркелдіңіз!', user: safeUser });
+});
+
+// Кіру / Вход
+app.post('/api/login', (req, res) => {
+    const { email, password } = req.body;
+    const db = readDB();
+    const user = db.users.find(u => u.email === email && u.password === password);
+
+    if (!user) {
+        return res.status(401).json({ success: false, message: 'Email немесе құпия сөз қате' });
+    }
+
+    const { password: _, ...safeUser } = user;
+    res.json({ success: true, user: safeUser });
+});
+
+// Барлық пайдаланушылар (тек әкімші)
+app.get('/api/users', (req, res) => {
+    const db = readDB();
+    const safeUsers = db.users.map(({ password, ...u }) => u);
+    res.json(safeUsers);
+});
+
+// ─── ӨТІНІШТЕР (Applications) ─────────────────────────────────────────────────
+
+// Барлық өтініштер
+app.get('/api/applications', (req, res) => {
+    const db = readDB();
+    res.json(db.applications);
+});
+
+// Нақты пайдаланушының өтініштері
+app.get('/api/applications/user/:userId', (req, res) => {
+    const db = readDB();
+    const apps = db.applications.filter(a => a.userId === Number(req.params.userId));
+    res.json(apps);
+});
+
+// Жаңа өтініш жасау
+app.post('/api/applications', (req, res) => {
+    const { userId, userFullName, aidId, aidTitle, fullName, iin, phone, birthDate, address, familySize, income, reason } = req.body;
+
+    if (!userId || !aidId || !fullName || !iin) {
+        return res.status(400).json({ success: false, message: 'Міндетті өрістер толтырылмаған' });
+    }
+
+    const db = readDB();
+    const newApp = {
+        id: Date.now(),
+        userId: Number(userId),
+        userFullName, aidId, aidTitle,
+        fullName, iin, phone, birthDate,
+        address, familySize, income, reason,
+        status: 'Қаралуда',
+        adminComment: '',
+        createdAt: new Date().toISOString(),
+        updatedAt: null
+    };
+
+    db.applications.push(newApp);
+    writeDB(db);
+    res.status(201).json({ success: true, application: newApp });
+});
+
+// Өтініш мәртебесін өзгерту (әкімші)
+app.patch('/api/applications/:id', (req, res) => {
+    const { status, adminComment } = req.body;
+    const db = readDB();
+    const app = db.applications.find(a => a.id === Number(req.params.id));
+
+    if (!app) return res.status(404).json({ success: false, message: 'Өтініш табылмады' });
+
+    app.status = status || app.status;
+    app.adminComment = adminComment !== undefined ? adminComment : app.adminComment;
+    app.updatedAt = new Date().toISOString();
+    writeDB(db);
+
+    res.json({ success: true, application: app });
+});
+
+// Өтінішті жою
+app.delete('/api/applications/:id', (req, res) => {
+    const db = readDB();
+    db.applications = db.applications.filter(a => a.id !== Number(req.params.id));
+    writeDB(db);
+    res.json({ success: true });
+});
+
+// ─── Запуск ───────────────────────────────────────────────────────────────────
+app.listen(PORT, () => {
+    console.log(`\n✅ Сервер іске қосылды: http://localhost:${PORT}`);
+    console.log(`📁 Деректер сақталады: db.json`);
+    console.log(`👤 Әкімші: admin@komek.kz / admin123\n`);
+});

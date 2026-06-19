@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ЦОН картасы — Алматы | ӘлеуметКөмек</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .map-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 50px 0 30px;
+            text-align: center;
+        }
+        .map-header h1 { font-size: 32px; margin-bottom: 10px; }
+        .map-header p { font-size: 16px; opacity: 0.9; }
+
+        .map-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            max-width: 1200px;
+            margin: 24px auto 16px;
+            padding: 0 20px;
+        }
+        .map-stat {
+            background: white;
+            border-radius: 12px;
+            padding: 12px 20px;
+            box-shadow: var(--shadow);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .map-stat strong { font-size: 20px; color: var(--primary); }
+
+        .map-layout {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 0;
+            max-width: 1200px;
+            margin: 0 auto 40px;
+            padding: 0 20px;
+        }
+
+        .con-sidebar {
+            background: white;
+            border-radius: 16px 0 0 16px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            max-height: 620px;
+        }
+        .sidebar-search {
+            padding: 14px;
+            border-bottom: 1px solid var(--border);
+            background: #f8faff;
+        }
+        .sidebar-search input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            box-sizing: border-box;
+        }
+        .sidebar-search input:focus { border-color: var(--primary); }
+
+        .con-list { overflow-y: auto; flex: 1; }
+
+        .con-item {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .con-item:hover { background: #f0f4ff; }
+        .con-item.active {
+            background: #e8f0fe;
+            border-left: 3px solid var(--primary);
+        }
+        .con-district {
+            font-size: 11px; font-weight: 700; color: var(--primary);
+            text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px;
+        }
+        .con-name { font-weight: 600; font-size: 14px; color: var(--text-dark); margin-bottom: 3px; }
+        .con-address { font-size: 12px; color: var(--text-gray); margin-bottom: 4px; }
+        .con-hours { font-size: 12px; color: #28a745; font-weight: 500; }
+        .con-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+        .con-tag {
+            background: #e8f0fe; color: var(--primary);
+            font-size: 11px; padding: 2px 8px; border-radius: 10px;
+        }
+
+        .map-panel {
+            border-radius: 0 16px 16px 0;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 2GIS iframe */
+        #mapFrame {
+            width: 100%;
+            height: 620px;
+            border: none;
+            display: block;
+        }
+
+        /* Info bar above map */
+        .selected-info {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 12px 18px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .selected-info.visible { display: flex; }
+        .sel-name { font-weight: 600; font-size: 15px; color: var(--text-dark); }
+        .sel-addr { font-size: 13px; color: var(--text-gray); }
+        .sel-actions { display: flex; gap: 8px; flex-shrink: 0; }
+        .sel-btn {
+            padding: 8px 14px; border-radius: 8px; font-size: 13px;
+            font-weight: 600; cursor: pointer; border: none;
+            text-decoration: none; display: inline-block;
+        }
+        .sel-btn-primary { background: var(--primary); color: white; }
+        .sel-btn-2gis { background: #1DA462; color: white; }
+
+        @media (max-width: 900px) {
+            .map-layout { grid-template-columns: 1fr; }
+            .con-sidebar { border-radius: 16px; max-height: 300px; }
+            .map-panel { border-radius: 16px; margin-top: 16px; }
+            #mapFrame { height: 420px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ornament-band"></div>
+
+    <header>
+        <div class="top-bar">
+            <div class="container">
+                <span data-i18n="topbar_phone">Сенім телефоны: 1414 (тегін)</span>
+                <span data-i18n="topbar_hours">Жұмыс уақыты: Дс-Жм 09:00 - 18:00</span>
+            </div>
+        </div>
+        <div class="container">
+            <div class="nav-bar">
+                <a href="index.html" class="logo">
+                    <div class="logo-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E8C97A" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                    </div>
+                    <span>ӘлеуметКөмек
+                        <span class="logo-sub">Әлеуметтік көмек порталы</span>
+                    </span>
+                </a>
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Басты бет</a></li>
+                        <li><a href="aids.html">Көмек түрлері</a></li>
+                        <li><a href="apply.html">Өтініш беру</a></li>
+                        <li><a href="assistant.html">ЖИ Кеңесші</a></li>
+                        <li><a href="map.html" class="active">ЦОН картасы</a></li>
+                        <li><a href="about.html">Байланыс</a></li>
+                        <li id="nav-login"><a href="login.html">Кіру</a></li>
+                        <li id="nav-cabinet" style="display:none;"><a href="cabinet.html">Жеке кабинет</a></li>
+                        <li id="nav-admin" style="display:none;"><a href="admin.html">Әкімші</a></li>
+                        <li id="nav-logout" style="display:none;"><a href="#" onclick="AUTH.logout(); return false;">Шығу</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div class="map-header">
+        <div class="container">
+            <h1 data-i18n="map_title">Алматы қаласының ЦОН-дары</h1>
+            <p data-i18n="map_sub">Халыққа қызмет көрсету орталықтары — 2GIS картасы арқылы жақынды табыңыз</p>
+        </div>
+    </div>
+
+    <div class="map-stats">
+        <div class="map-stat"><strong>14</strong> <span data-i18n="map_stat1">ЦОН Алматыда</span></div>
+        <div class="map-stat"><strong>8</strong> <span data-i18n="map_stat2">Аудан</span></div>
+        <div class="map-stat"><span data-i18n="map_stat3">Дс–Жм 09:00–18:00, Сб 09:00–13:00</span></div>
+        <div class="map-stat"> <span data-i18n="map_stat4">Байланыс: 1414</span></div>
+    </div>
+
+    <div class="map-layout">
+        <!-- Sidebar list -->
+        <div class="con-sidebar">
+            <div class="sidebar-search">
+                <input type="text" id="searchInput" data-i18n-ph="map_search_ph" placeholder=" Ауданды немесе мекенжайды іздеу..." oninput="filterCON(this.value)">
+            </div>
+            <div class="con-list" id="conList"></div>
+        </div>
+
+        <!-- Map panel -->
+        <div class="map-panel">
+            <div class="selected-info" id="selectedInfo">
+                <div>
+                    <div class="sel-name" id="selName"></div>
+                    <div class="sel-addr" id="selAddr"></div>
+                </div>
+                <div class="sel-actions">
+                    <a class="sel-btn sel-btn-2gis" id="selOpen2gis" href="#" target="_blank" data-i18n="map_open_2gis"> 2GIS-те ашу</a>
+                    <a class="sel-btn sel-btn-primary" id="selRoute" href="#" target="_blank" data-i18n="map_route">Жол</a>
+                </div>
+            </div>
+            <iframe
+                id="mapFrame"
+                src="https://widgets.2gis.com/widget?type=firmsonmap&options=%7B%22pos%22%3A%7B%22lat%22%3A43.2551%2C%22lon%22%3A76.9126%2C%22zoom%22%3A12%7D%7D"
+                allowfullscreen>
+            </iframe>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <h4>ӘлеуметКөмек</h4>
+                    <p>Қазақстан Республикасы азаматтарының әлеуметтік құқықтары туралы ақпараттық портал.</p>
+                </div>
+                <div>
+                    <h4>Сілтемелер</h4>
+                    <ul>
+                        <li><a href="index.html">Басты бет</a></li>
+                        <li><a href="aids.html">Көмек түрлері</a></li>
+                        <li><a href="assistant.html">ЖИ Кеңесші</a></li>
+                        <li><a href="map.html">ЦОН картасы</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Ресми ресурстар</h4>
+                    <ul>
+                        <li><a href="https://egov.kz" target="_blank">egov.kz</a></li>
+                        <li><a href="https://enbek.kz" target="_blank">enbek.kz</a></li>
+                        <li><a href="https://www.gov.kz" target="_blank">gov.kz</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Байланыс</h4>
+                    <p> 1414 (тегін)</p>
+                    <p> info@komek.kz</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 ӘлеуметКөмек порталы. Барлық құқықтар қорғалған.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <script src="js/i18n.js"></script>
+    <script>
+        const CON_DATA = [
+            { id:1,  district:"Алмалы ауданы",    name:"ЦОН № 1 — Алмалы",       address:"Сейфуллин д., 531",                  lat:43.2567, lng:76.9286, phone:"+7 727 279-23-00", services:["Әлеуметтік","Тіркеу","Жылжымайтын мүлік"] },
+            { id:2,  district:"Әуезов ауданы",     name:"ЦОН № 2 — Әуезов",       address:"Саина к-сі, 8",                      lat:43.2254, lng:76.8723, phone:"+7 727 225-40-00", services:["Әлеуметтік","Зейнетақы","Медицина"] },
+            { id:3,  district:"Бостандық ауданы",  name:"ЦОН № 3 — Бостандық",    address:"Тимирязев к-сі, 28в",                lat:43.2668, lng:76.9089, phone:"+7 727 292-12-00", services:["Әлеуметтік","Жұмыспен қамту","Тіркеу"] },
+            { id:4,  district:"Жетісу ауданы",     name:"ЦОН № 4 — Жетісу",       address:"Берегового к-сі, 1б",                lat:43.3049, lng:76.9934, phone:"+7 727 233-18-00", services:["Әлеуметтік","Тіркеу","Кәсіпкерлік"] },
+            { id:5,  district:"Медеу ауданы",      name:"ЦОН № 5 — Медеу",        address:"Достық д., 210",                     lat:43.2412, lng:76.9689, phone:"+7 727 293-85-00", services:["Әлеуметтік","Нотариат","Жылжымайтын мүлік"] },
+            { id:6,  district:"Наурызбай ауданы",  name:"ЦОН № 6 — Наурызбай",    address:"Рыскулбеков к-сі, 34",               lat:43.1943, lng:76.8245, phone:"+7 727 230-50-00", services:["Әлеуметтік","Тіркеу","Зейнетақы"] },
+            { id:7,  district:"Түркістан ауданы",  name:"ЦОН № 7 — Түркістан",    address:"Рысқұлов д., 132",                   lat:43.2789, lng:76.8801, phone:"+7 727 278-01-00", services:["Әлеуметтік","Тіркеу","Медицина"] },
+            { id:8,  district:"Алатау ауданы",     name:"ЦОН № 8 — Алатау",       address:"Жұлдыз шағынауданы, 35",             lat:43.1712, lng:76.8956, phone:"+7 727 399-20-00", services:["Әлеуметтік","Зейнетақы","Тіркеу"] },
+            { id:9,  district:"Алмалы ауданы",     name:"ЦОН — Желтоқсан",        address:"Желтоқсан к-сі, 116",                lat:43.2489, lng:76.9401, phone:"+7 727 279-00-11", services:["Әлеуметтік","Тіркеу"] },
+            { id:10, district:"Бостандық ауданы",  name:"ЦОН — Алматы Арена",     address:"Балуан Шолақ к-сі, 107",             lat:43.2521, lng:76.8934, phone:"+7 727 292-15-00", services:["Әлеуметтік","Жұмыспен қамту"] },
+            { id:11, district:"Жетісу ауданы",     name:"ЦОН — Шаңырақ",          address:"Момышұлы к-сі, 22",                  lat:43.3189, lng:77.0123, phone:"+7 727 233-22-00", services:["Әлеуметтік","Тіркеу"] },
+            { id:12, district:"Медеу ауданы",      name:"ЦОН — Горный гигант",    address:"Навои к-сі, 208",                    lat:43.2198, lng:76.9834, phone:"+7 727 293-90-00", services:["Әлеуметтік","Зейнетақы"] },
+            { id:13, district:"Әуезов ауданы",     name:"ЦОН — Мамыр",            address:"Мамыр-4 шағынауданы, 362",           lat:43.2087, lng:76.8567, phone:"+7 727 225-45-00", services:["Әлеуметтік","Тіркеу"] },
+            { id:14, district:"Наурызбай ауданы",  name:"ЦОН — Калкаман",         address:"Калкаман-2 шағынауданы, 25",         lat:43.1823, lng:76.8389, phone:"+7 727 230-55-00", services:["Әлеуметтік","Медицина"] }
+        ];
+
+        function renderList(data) {
+            const list = document.getElementById('conList');
+            list.innerHTML = '';
+            if (data.length === 0) {
+                list.innerHTML = `<div style="padding:24px;text-align:center;color:#999;">${I18N.t('map_not_found')}</div>`;
+                return;
+            }
+            data.forEach(con => {
+                const div = document.createElement('div');
+                div.className = 'con-item';
+                div.id = 'item-' + con.id;
+                div.innerHTML = `
+                    <div class="con-district">${con.district}</div>
+                    <div class="con-name">${con.name}</div>
+                    <div class="con-address"> Алматы қ., ${con.address}</div>
+                    <div class="con-hours">${I18N.t('map_hours')}</div>
+                    <div class="con-tags">${con.services.map(s=>`<span class="con-tag">${s}</span>`).join('')}</div>`;
+                div.onclick = () => selectCON(con.id);
+                list.appendChild(div);
+            });
+        }
+
+        function selectCON(id) {
+            const con = CON_DATA.find(c => c.id === id);
+            if (!con) return;
+
+            // Highlight
+            document.querySelectorAll('.con-item').forEach(el => el.classList.remove('active'));
+            const item = document.getElementById('item-' + id);
+            if (item) { item.classList.add('active'); item.scrollIntoView({ behavior:'smooth', block:'nearest' }); }
+
+            // Update info bar
+            document.getElementById('selName').textContent = con.name;
+            document.getElementById('selAddr').textContent = ' Алматы қ., ' + con.address + '  •   ' + con.phone;
+
+            // 2GIS deep link — search by name
+            const query = encodeURIComponent('Алматы ' + con.name);
+            document.getElementById('selOpen2gis').href = `https://2gis.kz/almaty/search/${query}`;
+            document.getElementById('selRoute').href = `https://2gis.kz/almaty/routeSearch/to/${con.lng},${con.lat}/go`;
+
+            document.getElementById('selectedInfo').classList.add('visible');
+
+            // Update iframe to center on selected CON
+            const src = `https://widgets.2gis.com/widget?type=firmsonmap&options=%7B%22pos%22%3A%7B%22lat%22%3A${con.lat}%2C%22lon%22%3A${con.lng}%2C%22zoom%22%3A16%7D%7D`;
+            document.getElementById('mapFrame').src = src;
+        }
+
+        function filterCON(q) {
+            const lower = q.toLowerCase();
+            renderList(CON_DATA.filter(c =>
+                c.name.toLowerCase().includes(lower) ||
+                c.district.toLowerCase().includes(lower) ||
+                c.address.toLowerCase().includes(lower)
+            ));
+        }
+
+        renderList(CON_DATA);
+    </script>
+</body>
+</html>

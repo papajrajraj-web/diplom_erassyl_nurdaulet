@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ЖИ Кеңесші | ӘлеуметКөмек</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .chat-page {
+            padding: 40px 0 60px;
+        }
+        .chat-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 50px 0 30px;
+            text-align: center;
+        }
+        .chat-header h1 { font-size: 32px; margin-bottom: 10px; }
+        .chat-header p { font-size: 16px; opacity: 0.9; }
+        .chat-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.4);
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        .chat-container {
+            max-width: 860px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        /* Quick prompts */
+        .quick-prompts {
+            margin-bottom: 20px;
+        }
+        .quick-prompts h3 {
+            font-size: 14px;
+            color: var(--text-gray);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        .prompt-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .chip {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 7px 16px;
+            font-size: 13px;
+            cursor: pointer;
+            color: var(--primary);
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .chip:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Chat box */
+        .chat-box {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        .chat-messages {
+            height: 460px;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .msg {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            max-width: 85%;
+        }
+        .msg.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+        .msg-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .msg.bot .msg-avatar {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        }
+        .msg.user .msg-avatar {
+            background: var(--accent);
+        }
+        .msg-bubble {
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+        .msg.bot .msg-bubble {
+            background: #f0f4ff;
+            border-top-left-radius: 4px;
+            color: var(--text-dark);
+        }
+        .msg.user .msg-bubble {
+            background: var(--primary);
+            color: white;
+            border-top-right-radius: 4px;
+        }
+        .msg-bubble ul {
+            margin: 8px 0 4px 18px;
+        }
+        .msg-bubble li {
+            margin-bottom: 4px;
+        }
+        .msg-bubble strong {
+            color: var(--primary-dark);
+        }
+        .msg.user .msg-bubble strong {
+            color: white;
+        }
+
+        /* Typing indicator */
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 12px;
+        }
+        .typing-indicator.visible {
+            display: flex;
+        }
+        .typing-dots {
+            background: #f0f4ff;
+            border-radius: 16px;
+            border-top-left-radius: 4px;
+            padding: 14px 18px;
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: bounce 1.2s infinite;
+            opacity: 0.5;
+        }
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes bounce {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+            30% { transform: translateY(-6px); opacity: 1; }
+        }
+
+        /* Input area */
+        .chat-input-area {
+            border-top: 1px solid var(--border);
+            padding: 16px 20px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        .chat-input-area textarea {
+            flex: 1;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 15px;
+            font-family: inherit;
+            resize: none;
+            outline: none;
+            transition: border-color 0.2s;
+            max-height: 120px;
+        }
+        .chat-input-area textarea:focus {
+            border-color: var(--primary);
+        }
+        .send-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            width: 48px;
+            height: 48px;
+            cursor: pointer;
+            font-size: 20px;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .send-btn:hover { background: var(--primary-dark); }
+        .send-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+        .disclaimer {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-gray);
+            margin-top: 14px;
+        }
+
+        /* Info cards */
+        .info-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        .info-card {
+            background: white;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+        .info-card .icon { font-size: 28px; margin-bottom: 8px; }
+        .info-card h4 { font-size: 14px; color: var(--text-dark); margin-bottom: 4px; }
+        .info-card p { font-size: 13px; color: var(--text-gray); }
+
+        @media (max-width: 768px) {
+            .chat-messages { height: 360px; }
+            .msg { max-width: 95%; }
+            .chat-header h1 { font-size: 24px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ornament-band"></div>
+
+    <!-- Шапка -->
+    <header>
+        <div class="top-bar">
+            <div class="container">
+                <span data-i18n="topbar_phone">Сенім телефоны: 1414 (тегін)</span>
+                <span data-i18n="topbar_hours">Жұмыс уақыты: Дс-Жм 09:00 - 18:00</span>
+            </div>
+        </div>
+        <div class="container">
+            <div class="nav-bar">
+                <a href="index.html" class="logo">
+                    <div class="logo-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E8C97A" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                    </div>
+                    <span>ӘлеуметКөмек
+                        <span class="logo-sub">Әлеуметтік көмек порталы</span>
+                    </span>
+                </a>
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Басты бет</a></li>
+                        <li><a href="aids.html">Көмек түрлері</a></li>
+                        <li><a href="apply.html">Өтініш беру</a></li>
+                        <li><a href="assistant.html" class="active">ЖИ Кеңесші</a></li>
+                        <li><a href="map.html">ЦОН картасы</a></li>
+                        <li><a href="about.html">Байланыс</a></li>
+                        <li id="nav-login"><a href="login.html">Кіру</a></li>
+                        <li id="nav-cabinet" style="display:none;"><a href="cabinet.html">Жеке кабинет</a></li>
+                        <li id="nav-admin" style="display:none;"><a href="admin.html">Әкімші</a></li>
+                        <li id="nav-logout" style="display:none;"><a href="#" onclick="AUTH.logout(); return false;">Шығу</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div class="chat-header">
+        <div class="container">
+            <div class="chat-badge" data-i18n="asst_badge"> Жасанды интеллект</div>
+            <h1 data-i18n="asst_title">ЖИ Кеңесші</h1>
+            <p data-i18n="asst_sub">Қандай әлеуметтік көмек алуға болатынын біліңіз — қазақ, орыс немесе ағылшын тілінде сұраңыз</p>
+        </div>
+    </div>
+
+    <div class="chat-container">
+
+        <div class="info-cards">
+            <div class="info-card">
+                <div class="icon"></div>
+                <h4 data-i18n="asst_c1_title">3 тілде жауап</h4>
+                <p data-i18n="asst_c1_desc">Қазақша, орысша немесе ағылшынша сұраңыз</p>
+            </div>
+            <div class="info-card">
+                <div class="icon"></div>
+                <h4 data-i18n="asst_c2_title">Құжаттар тізімі</h4>
+                <p data-i18n="asst_c2_desc">Нақты не әзірлеу керектігін айтады</p>
+            </div>
+            <div class="info-card">
+                <div class="icon"></div>
+                <h4 data-i18n="asst_c3_title">Қайда баруды</h4>
+                <p data-i18n="asst_c3_desc">ЦОН, egov.kz, enbek.kz — дұрыс жерді көрсетеді</p>
+            </div>
+            <div class="info-card">
+                <div class="icon"></div>
+                <h4 data-i18n="asst_c4_title">Шарттарын тексеру</h4>
+                <p data-i18n="asst_c4_desc">Сізге сай келетінін тексереді</p>
+            </div>
+        </div>
+
+        <div class="quick-prompts">
+            <h3 data-i18n="asst_quick"> Жылдам сұрақтар:</h3>
+            <div class="prompt-chips">
+                <button class="chip" onclick="sendChip(this.textContent)">Маған қандай көмек тиесілі?</button>
+                <button class="chip" onclick="sendChip(this.textContent)">АӘК алу үшін не қажет?</button>
+                <button class="chip" onclick="sendChip(this.textContent)">Жұмыссыз қалдым, не істеуім керек?</button>
+                <button class="chip" onclick="sendChip(this.textContent)">Мүгедектікке жәрдемақы қалай алынады?</button>
+                <button class="chip" onclick="sendChip(this.textContent)">Бала туылды, қандай жәрдемақылар бар?</button>
+                <button class="chip" onclick="sendChip(this.textContent)">Какие пособия я могу получить?</button>
+                <button class="chip" onclick="sendChip(this.textContent)">Тұрғын үй көмегіне кім өтінеді?</button>
+            </div>
+        </div>
+
+        <div class="chat-box">
+            <div class="chat-messages" id="chatMessages">
+                <div class="msg bot">
+                    <div class="msg-avatar"></div>
+                    <div class="msg-bubble">
+                        Сәлем! Мен <strong>ӘлеуметКөмек ЖИ кеңесшісімін</strong>.<br><br>
+                        Сізге мына сұрақтарда көмектесе аламын:
+                        <ul>
+                            <li>Қандай әлеуметтік көмек алуға болатыны</li>
+                            <li>Өтініш беру үшін қандай құжаттар керек</li>
+                            <li>Қайда және қалай өтініш беру керек</li>
+                            <li>Шарттар мен мерзімдер туралы</li>
+                        </ul>
+                        Қазақша, орысша немесе ағылшынша сұрай беріңіз!
+                    </div>
+                </div>
+            </div>
+
+            <div class="typing-indicator" id="typingIndicator">
+                <div style="width:38px;height:38px;background:linear-gradient(135deg,#0066CC,#004999);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;"></div>
+                <div class="typing-dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <textarea
+                    id="chatInput"
+                    data-i18n-ph="asst_ph"
+                    placeholder="Сұрақ жазыңыз... (мысалы: маған қандай жәрдемақы тиесілі?)"
+                    rows="1"
+                    onkeydown="handleKey(event)"
+                    oninput="autoResize(this)"
+                ></textarea>
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="Жіберу">
+                    ➤
+                </button>
+            </div>
+        </div>
+        <p class="disclaimer" data-i18n="asst_disclaimer">Кеңесші ақпараттық мақсатта ғана. Нақты шешім үшін ЦОН немесе egov.kz-ге жүгіңіз.</p>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <h4>ӘлеуметКөмек</h4>
+                    <p>Қазақстан Республикасы азаматтарының әлеуметтік құқықтары туралы ақпараттық портал.</p>
+                </div>
+                <div>
+                    <h4>Сілтемелер</h4>
+                    <ul>
+                        <li><a href="index.html">Басты бет</a></li>
+                        <li><a href="aids.html">Көмек түрлері</a></li>
+                        <li><a href="assistant.html">ЖИ Кеңесші</a></li>
+                        <li><a href="map.html">ЦОН картасы</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Ресми ресурстар</h4>
+                    <ul>
+                        <li><a href="https://egov.kz" target="_blank">egov.kz</a></li>
+                        <li><a href="https://enbek.kz" target="_blank">enbek.kz</a></li>
+                        <li><a href="https://www.gov.kz" target="_blank">gov.kz</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Байланыс</h4>
+                    <p> 1414 (тегін)</p>
+                    <p> info@komek.kz</p>
+                    <p> Астана қ., Мәңгілік Ел даңғылы</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 ӘлеуметКөмек порталы. Барлық құқықтар қорғалған.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/data.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/i18n.js"></script>
+    <script>
+        // ========== ВСТРОЕННЫЙ ИИ-АССИСТЕНТ ==========
+
+        const KB = [
+            // --- АӘК / АСП ---
+            {
+                keys: ['асп','аәк','атаулы','адресная','адресный','малообеспеч','кедей','бедн','targeted','low income','кіріс төмен','табысы төмен'],
+                ru: `<strong>АСП — Адресная социальная помощь</strong><br><br>
+<strong>Кто получает:</strong> семьи, чей среднедушевой доход ниже черты бедности — <strong>28 819 тг/мес</strong> на человека.<br><br>
+<strong>Размер выплаты:</strong> разница между чертой бедности и фактическим доходом семьи.<br><br>
+<strong>Необходимые документы:</strong>
+<ul>
+<li>Удостоверение личности всех членов семьи</li>
+<li>Справка о составе семьи</li>
+<li>Справки о доходах за последние 3 месяца</li>
+<li>Реквизиты банковского счёта</li>
+</ul>
+<strong>Куда обращаться:</strong> ЦОН по месту жительства или <strong>egov.kz</strong> онлайн.<br><br>
+Хотите найти ближайший ЦОН? <a href="map.html">Смотрите карту ЦОН</a>`,
+
+                kk: `<strong>АӘК — Атаулы әлеуметтік көмек</strong><br><br>
+<strong>Кім алады:</strong> жан басына шаққандағы орташа табысы кедейлік шегінен — <strong>28 819 тг/ай</strong> — төмен отбасылар.<br><br>
+<strong>Төлем мөлшері:</strong> кедейлік шегі мен нақты табыс арасындағы айырма.<br><br>
+<strong>Қажетті құжаттар:</strong>
+<ul>
+<li>Отбасы мүшелерінің жеке куәліктері</li>
+<li>Отбасы құрамы туралы анықтама</li>
+<li>Соңғы 3 айдағы табыс туралы анықтамалар</li>
+<li>Банк шотының деректемелері</li>
+</ul>
+<strong>Қайда баруға:</strong> тұрғылықты жері бойынша ЦОН немесе <strong>egov.kz</strong> онлайн.<br><br>
+Жақын ЦОН-ды табу үшін: <a href="map.html">ЦОН картасын қараңыз</a>`,
+
+                en: `<strong>Targeted Social Assistance (TSA/ASP)</strong><br><br>
+<strong>Who qualifies:</strong> Families with per-capita income below the poverty line — <strong>28,819 KZT/month</strong>.<br><br>
+<strong>Payment amount:</strong> The difference between the poverty line and the family's actual income.<br><br>
+<strong>Required documents:</strong>
+<ul>
+<li>ID documents for all family members</li>
+<li>Family composition certificate</li>
+<li>Income statements for the last 3 months</li>
+<li>Bank account details</li>
+</ul>
+<strong>Where to apply:</strong> Local Public Service Center (PSC/ЦОН) or <strong>egov.kz</strong> online.<br><br>
+Find nearest PSC: <a href="map.html">PSC map</a>`
+            },
+
+            // --- Многодетные / Көп балалы ---
+            {
+                keys: ['многодет','көп бала','4 бала','4 ребен','5 детей','6 детей','large family','many children','орден'],
+                ru: `<strong>Пособие многодетным семьям</strong><br><br>
+<strong>Условие:</strong> 4 и более несовершеннолетних детей.<br><br>
+<strong>Размеры выплат (2026):</strong>
+<ul>
+<li>4 детей — <strong>41 671 тг/мес</strong></li>
+<li>5 детей — <strong>55 561 тг/мес</strong></li>
+<li>6 детей — <strong>69 451 тг/мес</strong></li>
+<li>7 и более — <strong>83 341 тг/мес</strong></li>
+</ul>
+<strong>Дополнительно:</strong> матери с орденом «Алтын алқа» (7+ детей) получают <strong>147 450 тг/мес</strong>.<br><br>
+<strong>Документы:</strong> удостоверения личности, свидетельства о рождении всех детей, справка о составе семьи.<br><br>
+<strong>Куда:</strong> ЦОН или egov.kz`,
+
+                kk: `<strong>Көп балалы отбасыларға жәрдемақы</strong><br><br>
+<strong>Шарты:</strong> 4 және одан көп кәмелетке толмаған балалар.<br><br>
+<strong>Төлем мөлшері (2026):</strong>
+<ul>
+<li>4 бала — <strong>41 671 тг/ай</strong></li>
+<li>5 бала — <strong>55 561 тг/ай</strong></li>
+<li>6 бала — <strong>69 451 тг/ай</strong></li>
+<li>7 және одан көп — <strong>83 341 тг/ай</strong></li>
+</ul>
+<strong>Қосымша:</strong> «Алтын алқа» орденді аналар (7+ бала) — <strong>147 450 тг/ай</strong>.<br><br>
+<strong>Құжаттар:</strong> жеке куәліктер, барлық балалардың туу туралы куәліктері, отбасы құрамы туралы анықтама.<br><br>
+<strong>Қайда:</strong> ЦОН немесе egov.kz`,
+
+                en: `<strong>Large Family Benefit</strong><br><br>
+<strong>Condition:</strong> 4 or more minor children.<br><br>
+<strong>Monthly payments (2026):</strong>
+<ul>
+<li>4 children — <strong>41,671 KZT</strong></li>
+<li>5 children — <strong>55,561 KZT</strong></li>
+<li>6 children — <strong>69,451 KZT</strong></li>
+<li>7+ children — <strong>83,341 KZT</strong></li>
+</ul>
+<strong>Documents:</strong> IDs, birth certificates of all children, family composition certificate.<br><br>
+<strong>Where:</strong> PSC/ЦОН or egov.kz`
+            },
+
+            // --- Инвалидность / Мүгедектік ---
+            {
+                keys: ['инвалид','мүгедект','disability','disabled','мсэк','мәс','группа инвал','1 группа','2 группа','3 группа'],
+                ru: `<strong>Пособие по инвалидности</strong><br><br>
+<strong>Размеры выплат (2026):</strong>
+<ul>
+<li>I группа — <strong>118 019 тг/мес</strong></li>
+<li>II группа — <strong>98 349 тг/мес</strong></li>
+<li>III группа — <strong>73 349 тг/мес</strong></li>
+<li>Ребёнок с инвалидностью — <strong>78 349 тг/мес</strong></li>
+</ul>
+<strong>Как получить:</strong><br>
+1. Пройти медико-социальную экспертизу (МСЭ) — направление у врача<br>
+2. Получить справку об инвалидности<br>
+3. Подать заявление в ЦОН или на egov.kz<br><br>
+<strong>Документы:</strong> удостоверение личности, заключение МСЭ, справка о составе семьи.<br><br>
+<strong>Также положено:</strong> бесплатные лекарства, технические средства реабилитации (коляска, слуховой аппарат и др.)`,
+
+                kk: `<strong>Мүгедектік бойынша жәрдемақы</strong><br><br>
+<strong>Төлем мөлшері (2026):</strong>
+<ul>
+<li>I топ — <strong>118 019 тг/ай</strong></li>
+<li>II топ — <strong>98 349 тг/ай</strong></li>
+<li>III топ — <strong>73 349 тг/ай</strong></li>
+<li>Мүгедек бала — <strong>78 349 тг/ай</strong></li>
+</ul>
+<strong>Қалай алуға болады:</strong><br>
+1. МӘС-тен өту (дәрігерден жолдама алу)<br>
+2. Мүгедектік туралы анықтама алу<br>
+3. ЦОН немесе egov.kz арқылы өтініш беру<br><br>
+<strong>Құжаттар:</strong> жеке куәлік, МӘС қорытындысы, отбасы құрамы туралы анықтама.<br><br>
+<strong>Сонымен қатар:</strong> тегін дәрілер, оңалту техникалық құралдары`,
+
+                en: `<strong>Disability Benefit</strong><br><br>
+<strong>Payment amounts (2026):</strong>
+<ul>
+<li>Group I — <strong>118,019 KZT/month</strong></li>
+<li>Group II — <strong>98,349 KZT/month</strong></li>
+<li>Group III — <strong>73,349 KZT/month</strong></li>
+<li>Child with disability — <strong>78,349 KZT/month</strong></li>
+</ul>
+<strong>Steps:</strong><br>
+1. Get a referral to Medical Social Expert Commission (MSEC)<br>
+2. Receive disability certificate<br>
+3. Apply at PSC or egov.kz<br><br>
+<strong>Also entitled to:</strong> free medications, rehabilitation aids`
+            },
+
+            // --- Рождение ребёнка / Бала туылу ---
+            {
+                keys: ['рождени','родил','бала туыл','туу','newborn','birth','baby','декрет','жүктілік','беременн'],
+                ru: `<strong>Выплаты при рождении ребёнка</strong><br><br>
+<strong>1. Единовременное пособие при рождении:</strong>
+<ul>
+<li>1-й ребёнок — <strong>133 688 тг</strong></li>
+<li>2-й ребёнок — <strong>133 688 тг</strong></li>
+<li>3-й ребёнок — <strong>267 376 тг</strong></li>
+<li>4-й и более — <strong>347 589 тг</strong></li>
+</ul>
+<strong>2. Пособие по уходу за ребёнком до 1 года:</strong>
+<ul>
+<li>Работающим — 40% от среднемесячной зарплаты</li>
+<li>Неработающим — <strong>27 840 тг/мес</strong></li>
+</ul>
+<strong>3. По беременности и родам:</strong> 100% среднего заработка за 126 дней (70 до + 56 после).<br><br>
+<strong>Документы:</strong> удостоверение личности, свидетельство о рождении, справка с места работы.<br><br>
+<strong>Куда:</strong> egov.kz или ЦОН`,
+
+                kk: `<strong>Бала туылуына байланысты төлемдер</strong><br><br>
+<strong>1. Бала туылуына бір жолғы жәрдемақы:</strong>
+<ul>
+<li>1-ші бала — <strong>133 688 тг</strong></li>
+<li>2-ші бала — <strong>133 688 тг</strong></li>
+<li>3-ші бала — <strong>267 376 тг</strong></li>
+<li>4-ші және одан көп — <strong>347 589 тг</strong></li>
+</ul>
+<strong>2. 1 жасқа дейінгі баланы күту бойынша жәрдемақы:</strong>
+<ul>
+<li>Жұмыс істейтіндерге — орташа айлық жалақының 40%-ы</li>
+<li>Жұмыс істемейтіндерге — <strong>27 840 тг/ай</strong></li>
+</ul>
+<strong>3. Жүктілік және босану бойынша:</strong> 126 күнге орташа жалақының 100%-ы.<br><br>
+<strong>Құжаттар:</strong> жеке куәлік, туу туралы куәлік, жұмыс орнынан анықтама.<br><br>
+<strong>Қайда:</strong> egov.kz немесе ЦОН`,
+
+                en: `<strong>Childbirth Benefits</strong><br><br>
+<strong>1. One-time birth payment:</strong>
+<ul>
+<li>1st child — <strong>133,688 KZT</strong></li>
+<li>2nd child — <strong>133,688 KZT</strong></li>
+<li>3rd child — <strong>267,376 KZT</strong></li>
+<li>4th+ child — <strong>347,589 KZT</strong></li>
+</ul>
+<strong>2. Childcare benefit (up to 1 year):</strong>
+<ul>
+<li>Employed — 40% of average monthly salary</li>
+<li>Unemployed — <strong>27,840 KZT/month</strong></li>
+</ul>
+<strong>3. Maternity leave:</strong> 100% of average salary for 126 days.<br><br>
+<strong>Where:</strong> egov.kz or PSC`
+            },
+
+            // --- Безработица / Жұмыссыздық ---
+            {
+                keys: ['безработ','уволил','потерял работ','жұмыссыз','жұмыс жоқ','жұмысымнан','unemployment','jobless','enbek','еңбек','сокращ','жұмысынан шықт'],
+                ru: `<strong>Пособие по безработице</strong><br><br>
+<strong>Условия получения:</strong>
+<ul>
+<li>Официально зарегистрирован безработным в Центре занятости</li>
+<li>Имеете стаж работы с отчислениями в ФСЗН</li>
+<li>Уволены не по собственному желанию (или по соглашению сторон)</li>
+</ul>
+<strong>Размер:</strong> зависит от стажа и средней зарплаты. Минимум — <strong>48 032 тг/мес</strong> (МЗП).<br><br>
+<strong>Шаги:</strong><br>
+1. Встать на учёт в Центр занятости (Мансап орталығы) — в течение <strong>10 дней</strong> после увольнения<br>
+2. Зарегистрироваться на <strong>enbek.kz</strong><br>
+3. Подать заявление на пособие<br><br>
+<strong>Документы:</strong> удостоверение личности, трудовая книжка или выписка, приказ об увольнении.<br><br>
+<strong>Срок выплаты:</strong> до 6 месяцев`,
+
+                kk: `<strong>Жұмыссыздық бойынша жәрдемақы</strong><br><br>
+<strong>Алу шарттары:</strong>
+<ul>
+<li>Жұмыспен қамту орталығында ресми жұмыссыз ретінде тіркелу</li>
+<li>МЖҚФ-ға аударымдармен жұмыс өтілі болу</li>
+<li>Өз еркімен емес жұмыстан шығарылу</li>
+</ul>
+<strong>Мөлшері:</strong> өтіл мен орташа жалақыға байланысты. Ең аз — <strong>48 032 тг/ай</strong> (ЕТЖ).<br><br>
+<strong>Қадамдар:</strong><br>
+1. Жұмыстан шыққаннан кейін <strong>10 күн ішінде</strong> Мансап орталығына тіркелу<br>
+2. <strong>enbek.kz</strong> сайтына тіркелу<br>
+3. Жәрдемақыға өтініш беру<br><br>
+<strong>Құжаттар:</strong> жеке куәлік, еңбек кітапшасы немесе үзінді, жұмыстан шығару туралы бұйрық.<br><br>
+<strong>Төлем мерзімі:</strong> 6 айға дейін`,
+
+                en: `<strong>Unemployment Benefit</strong><br><br>
+<strong>Conditions:</strong>
+<ul>
+<li>Officially registered as unemployed at the Employment Center</li>
+<li>Have work history with social contributions</li>
+<li>Dismissed (not resigned voluntarily)</li>
+</ul>
+<strong>Amount:</strong> Based on work history and salary. Minimum — <strong>48,032 KZT/month</strong>.<br><br>
+<strong>Steps:</strong><br>
+1. Register at Employment Center (Mansap Ortalygy) within <strong>10 days</strong> of dismissal<br>
+2. Register on <strong>enbek.kz</strong><br>
+3. Apply for benefit<br><br>
+<strong>Duration:</strong> up to 6 months`
+            },
+
+            // --- Жилищная помощь / Тұрғын үй ---
+            {
+                keys: ['жили','тұрғын үй','коммун','квартплат','аренд','жалдам','housing','utility','ЖКХ','комуналды'],
+                ru: `<strong>Жилищная помощь</strong><br><br>
+Государство компенсирует часть расходов на оплату жилья и коммунальных услуг.<br><br>
+<strong>Кто имеет право:</strong> семьи, у которых расходы на ЖКХ превышают <strong>10% от совокупного дохода</strong>.<br><br>
+<strong>Что компенсируется:</strong>
+<ul>
+<li>Содержание жилья</li>
+<li>Теплоснабжение</li>
+<li>Водоснабжение и канализация</li>
+<li>Вывоз мусора</li>
+</ul>
+<strong>Документы:</strong> удостоверение личности, справка о составе семьи, справки о доходах, квитанции ЖКХ, документ на жильё.<br><br>
+<strong>Куда:</strong> ЦОН или egov.kz → «Жилищная помощь»`,
+
+                kk: `<strong>Тұрғын үй көмегі</strong><br><br>
+Мемлекет тұрғын үй және коммуналдық қызметтерге кеткен шығындардың бір бөлігін өтейді.<br><br>
+<strong>Кімге тиесілі:</strong> ЖКХ шығындары жалпы табыстың <strong>10%-нан</strong> асатын отбасылар.<br><br>
+<strong>Не өтеледі:</strong>
+<ul>
+<li>Тұрғын үйді ұстау</li>
+<li>Жылумен жабдықтау</li>
+<li>Сумен жабдықтау және кәріз</li>
+<li>Қоқысты шығару</li>
+</ul>
+<strong>Құжаттар:</strong> жеке куәлік, отбасы құрамы туралы анықтама, табыс анықтамалары, ЖКХ түбіртектері, тұрғын үй құжаты.<br><br>
+<strong>Қайда:</strong> ЦОН немесе egov.kz → «Тұрғын үй көмегі»`,
+
+                en: `<strong>Housing Assistance</strong><br><br>
+The state compensates part of housing and utility expenses.<br><br>
+<strong>Who qualifies:</strong> Families whose utility costs exceed <strong>10% of total income</strong>.<br><br>
+<strong>What is covered:</strong>
+<ul>
+<li>Housing maintenance</li>
+<li>Heating</li>
+<li>Water and sewage</li>
+<li>Waste collection</li>
+</ul>
+<strong>Documents:</strong> ID, family certificate, income statements, utility bills, housing document.<br><br>
+<strong>Where:</strong> PSC or egov.kz → "Housing assistance"`
+            },
+
+            // --- Пенсия / Зейнетақы ---
+            {
+                keys: ['пенси','зейнетақы','retirement','pension','зейнет','пожилой','қарт','старост'],
+                ru: `<strong>Пенсионное обеспечение</strong><br><br>
+<strong>Возраст выхода на пенсию (2026):</strong>
+<ul>
+<li>Мужчины — <strong>63 года</strong></li>
+<li>Женщины — <strong>61 год</strong> (поэтапно повышается до 63)</li>
+</ul>
+<strong>Виды пенсии:</strong>
+<ul>
+<li><strong>Базовая пенсия</strong> — всем гражданам. Размер: 70% от прожиточного минимума = ~<strong>33 623 тг/мес</strong></li>
+<li><strong>Солидарная пенсия</strong> — за трудовой стаж до 1 января 1998 г.</li>
+<li><strong>Накопительная пенсия</strong> — из ЕНПФ (индивидуальные накопления)</li>
+</ul>
+<strong>Документы:</strong> удостоверение личности, трудовая книжка, выписка из ЕНПФ.<br><br>
+<strong>Куда:</strong> ЕНПФ, ЦОН или egov.kz`,
+
+                kk: `<strong>Зейнетақымен қамсыздандыру</strong><br><br>
+<strong>Зейнетке шығу жасы (2026):</strong>
+<ul>
+<li>Ерлер — <strong>63 жас</strong></li>
+<li>Әйелдер — <strong>61 жас</strong> (63-ке дейін біртіндеп артады)</li>
+</ul>
+<strong>Зейнетақы түрлері:</strong>
+<ul>
+<li><strong>Базалық зейнетақы</strong> — барлық азаматтарға. Мөлшері: ~<strong>33 623 тг/ай</strong></li>
+<li><strong>Ынтымақтастық зейнетақысы</strong> — 1998 жылға дейінгі еңбек өтілі үшін</li>
+<li><strong>Жинақтаушы зейнетақы</strong> — БЖЗҚ-дан (жеке жинақтар)</li>
+</ul>
+<strong>Құжаттар:</strong> жеке куәлік, еңбек кітапшасы, БЖЗҚ-дан үзінді.<br><br>
+<strong>Қайда:</strong> БЖЗҚ, ЦОН немесе egov.kz`,
+
+                en: `<strong>Pension Benefits</strong><br><br>
+<strong>Retirement age (2026):</strong>
+<ul>
+<li>Men — <strong>63 years</strong></li>
+<li>Women — <strong>61 years</strong> (gradually rising to 63)</li>
+</ul>
+<strong>Types:</strong>
+<ul>
+<li><strong>Basic pension</strong> — for all citizens: ~<strong>33,623 KZT/month</strong></li>
+<li><strong>Solidarity pension</strong> — for work experience before Jan 1, 1998</li>
+<li><strong>Funded pension</strong> — from UAPF individual savings</li>
+</ul>
+<strong>Where:</strong> UAPF, PSC or egov.kz`
+            },
+
+            // --- Утрата кормильца / Асыраушысынан айырылу ---
+            {
+                keys: ['кормилец','асыраушы','потеря кормильца','умер','қайтыс','survivor','breadwinner','widow','жесір'],
+                ru: `<strong>Пособие по потере кормильца</strong><br><br>
+<strong>Кому положено:</strong> нетрудоспособным членам семьи умершего (дети до 18 лет, супруга/супруг, родители-пенсионеры).<br><br>
+<strong>Размер (2026):</strong>
+<ul>
+<li>На 1 иждивенца — <strong>49 150 тг/мес</strong></li>
+<li>На 2 иждивенцев — <strong>73 725 тг/мес</strong></li>
+<li>На 3 и более — <strong>98 300 тг/мес</strong></li>
+</ul>
+<strong>Условие:</strong> умерший должен был иметь страховой стаж.<br><br>
+<strong>Документы:</strong> удостоверение личности, свидетельство о смерти, документы подтверждающие родство, справка о составе семьи.<br><br>
+<strong>Куда:</strong> ГЦВП или ЦОН`,
+
+                kk: `<strong>Асыраушысынан айырылу жәрдемақысы</strong><br><br>
+<strong>Кімге тиесілі:</strong> қайтыс болған адамның еңбекке жарамсыз отбасы мүшелері (18 жасқа дейінгі балалар, зайыбы/күйеуі, зейнеткер ата-анасы).<br><br>
+<strong>Мөлшері (2026):</strong>
+<ul>
+<li>1 асырауындағы — <strong>49 150 тг/ай</strong></li>
+<li>2 асырауындағы — <strong>73 725 тг/ай</strong></li>
+<li>3 және одан көп — <strong>98 300 тг/ай</strong></li>
+</ul>
+<strong>Шарты:</strong> қайтыс болған адамның сақтандыру өтілі болуы керек.<br><br>
+<strong>Құжаттар:</strong> жеке куәлік, қайтыс болу туралы куәлік, туыстықты растайтын құжаттар, отбасы құрамы туралы анықтама.<br><br>
+<strong>Қайда:</strong> МЖМО немесе ЦОН`,
+
+                en: `<strong>Survivor's Benefit (Loss of Breadwinner)</strong><br><br>
+<strong>Who qualifies:</strong> Disabled family members of the deceased (children under 18, spouse, retired parents).<br><br>
+<strong>Amounts (2026):</strong>
+<ul>
+<li>1 dependent — <strong>49,150 KZT/month</strong></li>
+<li>2 dependents — <strong>73,725 KZT/month</strong></li>
+<li>3+ dependents — <strong>98,300 KZT/month</strong></li>
+</ul>
+<strong>Documents:</strong> ID, death certificate, proof of relation, family composition certificate.<br><br>
+<strong>Where:</strong> State Center for Pension Payments or PSC`
+            },
+
+            // --- Что мне положено / общий вопрос ---
+            {
+                keys: ['что мне положено','какие пособия','маған қандай','не аламын','что я могу получить','what benefits','what can i get','қандай көмек','тиесілі','алуға болады'],
+                ru: `<strong>Какие пособия вам могут быть положены?</strong><br><br>
+Это зависит от вашей ситуации. Расскажите о себе, и я подберу подходящую помощь. Или выберите свою ситуацию:<br><br>
+<ul>
+<li> <strong>Потеряли работу</strong> → пособие по безработице</li>
+<li> <strong>Родился ребёнок</strong> → единовременная выплата + пособие до 1 года</li>
+<li> <strong>Многодетная семья (4+ детей)</strong> → ежемесячное пособие</li>
+<li> <strong>Инвалидность</strong> → пособие по группе инвалидности</li>
+<li> <strong>Низкий доход</strong> → АСП (адресная социальная помощь)</li>
+<li> <strong>Высокие коммунальные расходы</strong> → жилищная помощь</li>
+<li> <strong>Пенсионный возраст (61/63 лет)</strong> → пенсия</li>
+<li> <strong>Смерть кормильца</strong> → пособие по потере кормильца</li>
+</ul>
+Напишите свою ситуацию, и я помогу!`,
+
+                kk: `<strong>Сізге қандай жәрдемақылар тиесілі?</strong><br><br>
+Бұл сіздің жағдайыңызға байланысты. Жағдайыңызды айтыңыз, мен сәйкес көмекті таңдаймын. Немесе өз жағдайыңызды таңдаңыз:<br><br>
+<ul>
+<li> <strong>Жұмыс жоғалтты</strong> → жұмыссыздық жәрдемақысы</li>
+<li> <strong>Бала туылды</strong> → бір жолғы төлем + 1 жасқа дейін жәрдемақы</li>
+<li> <strong>Көп балалы отбасы (4+ бала)</strong> → ай сайынғы жәрдемақы</li>
+<li> <strong>Мүгедектік</strong> → мүгедектік тобы бойынша жәрдемақы</li>
+<li> <strong>Табысы төмен</strong> → АӘК (атаулы әлеуметтік көмек)</li>
+<li> <strong>Коммуналдық шығындар жоғары</strong> → тұрғын үй көмегі</li>
+<li> <strong>Зейнет жасы (61/63 жас)</strong> → зейнетақы</li>
+<li> <strong>Асыраушы қайтыс болды</strong> → асыраушысынан айырылу жәрдемақысы</li>
+</ul>
+Жағдайыңызды жазыңыз, мен көмектесемін!`,
+
+                en: `<strong>What benefits can you receive?</strong><br><br>
+It depends on your situation. Tell me about yourself, or choose your situation:<br><br>
+<ul>
+<li> <strong>Lost job</strong> → Unemployment benefit</li>
+<li> <strong>Newborn child</strong> → One-time payment + childcare benefit</li>
+<li> <strong>Large family (4+ children)</strong> → Monthly family benefit</li>
+<li> <strong>Disability</strong> → Disability benefit by group</li>
+<li> <strong>Low income</strong> → Targeted Social Assistance (TSA)</li>
+<li> <strong>High utility costs</strong> → Housing assistance</li>
+<li> <strong>Retirement age (61/63)</strong> → Pension</li>
+<li> <strong>Death of breadwinner</strong> → Survivor's benefit</li>
+</ul>
+Describe your situation and I'll help!`
+            },
+
+            // --- ЦОН / egov ---
+            {
+                keys: ['цон','egov','егов','қайда барам','куда обращ','қайда өтініш','где подать','how to apply','документ','қажет','нужны','нужно'],
+                ru: `<strong>Куда обращаться за помощью?</strong><br><br>
+<strong>Онлайн (рекомендуется):</strong>
+<ul>
+<li><strong>egov.kz</strong> — портал электронного правительства. Большинство пособий можно оформить онлайн</li>
+<li><strong>enbek.kz</strong> — пособие по безработице, поиск работы</li>
+</ul>
+<strong>Лично:</strong>
+<ul>
+<li><strong>ЦОН</strong> (Центр обслуживания населения) — по месту жительства</li>
+<li><strong>Центр занятости (Мансап орталығы)</strong> — вопросы занятости и безработицы</li>
+</ul>
+<strong>Телефон:</strong> 1414 (бесплатно, пн-пт 9:00-18:00)<br><br>
+Найти ЦОН рядом с вами: <a href="map.html">Карта ЦОН в Алматы</a>`,
+
+                kk: `<strong>Қайда жүгінуге болады?</strong><br><br>
+<strong>Онлайн (ұсынылады):</strong>
+<ul>
+<li><strong>egov.kz</strong> — электрондық үкімет порталы. Көптеген жәрдемақыны онлайн рәсімдеуге болады</li>
+<li><strong>enbek.kz</strong> — жұмыссыздық жәрдемақысы, жұмыс іздеу</li>
+</ul>
+<strong>Жеке барып:</strong>
+<ul>
+<li><strong>ЦОН</strong> (Халыққа қызмет көрсету орталығы) — тұрғылықты жері бойынша</li>
+<li><strong>Мансап орталығы</strong> — жұмыспен қамту және жұмыссыздық мәселелері</li>
+</ul>
+<strong>Телефон:</strong> 1414 (тегін, дс-жм 9:00-18:00)<br><br>
+Жақын ЦОН-ды табу: <a href="map.html">Алматы бойынша ЦОН картасы</a>`,
+
+                en: `<strong>Where to apply for assistance?</strong><br><br>
+<strong>Online (recommended):</strong>
+<ul>
+<li><strong>egov.kz</strong> — e-Government portal. Most benefits can be applied online</li>
+<li><strong>enbek.kz</strong> — unemployment benefit, job search</li>
+</ul>
+<strong>In person:</strong>
+<ul>
+<li><strong>PSC/ЦОН</strong> — Public Service Center at your place of residence</li>
+<li><strong>Employment Center (Mansap Ortalygy)</strong> — employment and unemployment issues</li>
+</ul>
+<strong>Hotline:</strong> 1414 (free, Mon-Fri 9:00-18:00)<br><br>
+Find nearest PSC: <a href="map.html">PSC map in Almaty</a>`
+            }
+        ];
+
+        // Detect language from text
+        function detectLang(text) {
+            const kk = /[әіңғүұқөһ]/i.test(text);
+            const ru = /[а-яё]/i.test(text) && !kk;
+            if (kk) return 'kk';
+            if (ru) return 'ru';
+            return 'en';
+        }
+
+        // Find best matching knowledge base entry
+        function findAnswer(text) {
+            const lower = text.toLowerCase();
+            let best = null;
+            let bestScore = 0;
+
+            for (const entry of KB) {
+                let score = 0;
+                for (const key of entry.keys) {
+                    if (lower.includes(key)) score++;
+                }
+                if (score > bestScore) {
+                    bestScore = score;
+                    best = entry;
+                }
+            }
+            return bestScore > 0 ? best : null;
+        }
+
+        function getFallback(lang) {
+            const fb = {
+                ru: `Я — ИИ-консультант портала <strong>ӘлеуметКөмек</strong>. Я отвечаю только на вопросы о казахстанских социальных пособиях.<br><br>
+Вы можете спросить меня о:<br>
+<ul>
+<li>АСП (адресная социальная помощь)</li>
+<li>Пособиях при рождении ребёнка</li>
+<li>Пособии по инвалидности</li>
+<li>Пособии по безработице</li>
+<li>Пенсиях</li>
+<li>Жилищной помощи</li>
+<li>Многодетных семьях</li>
+</ul>
+По другим вопросам обратитесь на <strong>egov.kz</strong> или позвоните <strong>1414</strong>.`,
+                kk: `Мен — <strong>ӘлеуметКөмек</strong> порталының ЖИ кеңесшісімін. Мен тек Қазақстандағы әлеуметтік жәрдемақылар туралы сұрақтарға жауап беремін.<br><br>
+Маған мыналар туралы сұрай аласыз:<br>
+<ul>
+<li>АӘК (атаулы әлеуметтік көмек)</li>
+<li>Бала туылуына байланысты жәрдемақылар</li>
+<li>Мүгедектік жәрдемақысы</li>
+<li>Жұмыссыздық жәрдемақысы</li>
+<li>Зейнетақы</li>
+<li>Тұрғын үй көмегі</li>
+<li>Көп балалы отбасылар</li>
+</ul>
+Басқа мәселелер бойынша <strong>egov.kz</strong> сайтына немесе <strong>1414</strong> нөміріне хабарласыңыз.`,
+                en: `I am the AI consultant for the <strong>ӘлеуметКөмек</strong> portal. I only answer questions about Kazakhstani social benefits.<br><br>
+You can ask me about:<br>
+<ul>
+<li>Targeted Social Assistance (TSA/АСП)</li>
+<li>Childbirth benefits</li>
+<li>Disability benefits</li>
+<li>Unemployment benefits</li>
+<li>Pensions</li>
+<li>Housing assistance</li>
+<li>Large family benefits</li>
+</ul>
+For other questions, visit <strong>egov.kz</strong> or call <strong>1414</strong>.`
+            };
+            return fb[lang] || fb.ru;
+        }
+
+        function getAIResponse(text) {
+            const lang = detectLang(text);
+            const entry = findAnswer(text);
+            if (entry) {
+                return entry[lang] || entry.ru;
+            }
+            return getFallback(lang);
+        }
+
+        let conversationHistory = [];
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            input.value = '';
+            autoResize(input);
+            appendMessage('user', text);
+
+            showTyping(true);
+            document.getElementById('sendBtn').disabled = true;
+
+            // Simulate thinking delay
+            const delay = 700 + Math.random() * 800;
+            setTimeout(() => {
+                const reply = getAIResponse(text);
+                showTyping(false);
+                appendMessage('bot', reply);
+                document.getElementById('sendBtn').disabled = false;
+            }, delay);
+        }
+
+        function appendMessage(role, html) {
+            const container = document.getElementById('chatMessages');
+            const div = document.createElement('div');
+            div.className = `msg ${role}`;
+            div.innerHTML = `
+                <div class="msg-avatar">${role === 'bot' ? '' : ''}</div>
+                <div class="msg-bubble">${html}</div>
+            `;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showTyping(show) {
+            const indicator = document.getElementById('typingIndicator');
+            const container = document.getElementById('chatMessages');
+            if (show) {
+                indicator.classList.add('visible');
+                container.appendChild(indicator);
+                container.scrollTop = container.scrollHeight;
+            } else {
+                indicator.classList.remove('visible');
+            }
+        }
+
+        function sendChip(text) {
+            document.getElementById('chatInput').value = text;
+            sendMessage();
+        }
+
+        function handleKey(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function autoResize(el) {
+            el.style.height = 'auto';
+            el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+        }
+    </script>
+</body>
+</html>

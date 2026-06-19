@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Әкімші панелі | ӘлеуметКөмек</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div class="ornament-band"></div>
+
+    <header>
+        <div class="top-bar">
+            <div class="container">
+                <span data-i18n="topbar_phone">Сенім телефоны: 1414 (тегін)</span>
+                <span data-i18n="topbar_admin">Әкімші панелі</span>
+            </div>
+        </div>
+        <div class="container">
+            <div class="nav-bar">
+                <a href="index.html" class="logo">
+                    <div class="logo-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E8C97A" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                    </div>
+                    <span>ӘлеуметКөмек
+                        <span class="logo-sub">Әлеуметтік көмек порталы</span>
+                    </span>
+                </a>
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Басты бет</a></li>
+                        <li><a href="aids.html">Көмек түрлері</a></li>
+                        <li><a href="admin.html" class="active">Әкімші</a></li>
+                        <li><a href="#" onclick="AUTH.logout(); return false;">Шығу</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div class="cabinet-header">
+        <div class="container">
+            <h1 data-i18n="adm_title">Әкімші панелі</h1>
+            <p data-i18n="adm_sub">Өтініштерді басқару және пайдаланушылар тізімі</p>
+        </div>
+    </div>
+
+    <section>
+        <div class="container">
+            <!-- Статистика -->
+            <div class="stats-grid" id="admin-stats" style="margin-bottom: 30px;"></div>
+
+            <div class="cabinet-grid">
+                <aside class="sidebar">
+                    <ul>
+                        <li><a href="#" class="tab-link active" data-tab="applications" data-i18n="adm_tab_apps"> Өтініштер</a></li>
+                        <li><a href="#" class="tab-link" data-tab="users" data-i18n="adm_tab_users"> Пайдаланушылар</a></li>
+                        <li><a href="#" onclick="AUTH.logout(); return false;" data-i18n="adm_logout"> Шығу</a></li>
+                    </ul>
+                </aside>
+
+                <div class="main-content">
+                    <!-- Өтініштер -->
+                    <div id="tab-applications" class="tab-content">
+                        <h2 style="margin-bottom: 20px;">Барлық өтініштер</h2>
+                        <div style="margin-bottom: 15px;">
+                            <label>Сүзу: </label>
+                            <select id="filter-status" onchange="renderApplications()" style="padding:8px 12px; border-radius:6px; border:1px solid #ddd;">
+                                <option value="all">Барлығы</option>
+                                <option value="Қаралуда">Қаралуда</option>
+                                <option value="Мақұлданды">Мақұлданды</option>
+                                <option value="Қабылданбады">Қабылданбады</option>
+                            </select>
+                        </div>
+                        <div id="applications-list"></div>
+                    </div>
+
+                    <!-- Пайдаланушылар -->
+                    <div id="tab-users" class="tab-content hidden">
+                        <h2 style="margin-bottom: 20px;">Тіркелген пайдаланушылар</h2>
+                        <div id="users-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Модаль терезе -->
+    <div id="modal" class="hidden" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); z-index:1000; display:flex; align-items:center; justify-content:center;">
+        <div style="background:white; padding:30px; border-radius:12px; max-width:500px; width:90%;">
+            <h3 id="modal-title" style="margin-bottom:15px;">Өтінішке жауап беру</h3>
+            <div id="modal-content"></div>
+            <div class="form-group">
+                <label>Мәртебе:</label>
+                <select id="modal-status">
+                    <option value="Қаралуда">Қаралуда</option>
+                    <option value="Мақұлданды">Мақұлданды</option>
+                    <option value="Қабылданбады">Қабылданбады</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Түсініктеме:</label>
+                <textarea id="modal-comment" placeholder="Пайдаланушыға арналған түсініктеме..."></textarea>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-primary" onclick="saveStatus()">Сақтау</button>
+                <button class="btn btn-outline" onclick="closeModal()">Бас тарту</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2026 ӘлеуметКөмек порталы. Барлық құқықтар қорғалған.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/data.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/i18n.js"></script>
+    <script>
+        if (!AUTH.isAdmin()) {
+            alert('Бұл бетке тек әкімшінің қатынасы бар');
+            window.location.href = 'index.html';
+        }
+
+        let currentAppId = null;
+
+        const statusMap = {
+            'Қаралуда':    { cls: 'badge-warning', key: 'status_review' },
+            'Мақұлданды':  { cls: 'badge-success', key: 'status_approved' },
+            'Қабылданбады':{ cls: 'badge-danger',  key: 'status_rejected' }
+        };
+
+        async function renderStats() {
+            const apps = await APPLICATIONS.getAll();
+            const usersRes = await fetch('/api/users');
+            const allUsers = await usersRes.json();
+            const users = allUsers.filter(u => u.role !== 'admin');
+            const pending  = apps.filter(a => a.status === 'Қаралуда').length;
+            const approved = apps.filter(a => a.status === 'Мақұлданды').length;
+            const st = 'background:white;padding:25px;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,0.08);';
+            document.getElementById('admin-stats').innerHTML = `
+                <div class="stat-item" style="${st}"><span class="stat-number">${users.length}</span><span class="stat-label">${I18N.t('adm_stat_users')}</span></div>
+                <div class="stat-item" style="${st}"><span class="stat-number">${apps.length}</span><span class="stat-label">${I18N.t('adm_stat_all')}</span></div>
+                <div class="stat-item" style="${st}"><span class="stat-number" style="color:#ffc107;">${pending}</span><span class="stat-label">${I18N.t('status_review')}</span></div>
+                <div class="stat-item" style="${st}"><span class="stat-number" style="color:#28a745;">${approved}</span><span class="stat-label">${I18N.t('status_approved')}</span></div>
+            `;
+        }
+
+        async function renderApplications() {
+            const filter = document.getElementById('filter-status').value;
+            let apps = await APPLICATIONS.getAll();
+            if (filter !== 'all') apps = apps.filter(a => a.status === filter);
+
+            const container = document.getElementById('applications-list');
+            if (apps.length === 0) {
+                container.innerHTML = `<div class="alert alert-info">${I18N.t('adm_no_apps')}</div>`;
+                return;
+            }
+
+            let html = `<div class="table-wrapper"><table><thead><tr>
+                <th>${I18N.t('adm_th_num')}</th><th>${I18N.t('adm_th_user')}</th>
+                <th>${I18N.t('adm_th_type')}</th><th>${I18N.t('adm_th_date')}</th>
+                <th>${I18N.t('adm_th_status')}</th><th>${I18N.t('adm_th_action')}</th>
+            </tr></thead><tbody>`;
+
+            apps.slice().reverse().forEach((app, i) => {
+                const s = statusMap[app.status] || { cls: 'badge-info', key: null };
+                const label = s.key ? I18N.t(s.key) : app.status;
+                html += `<tr>
+                    <td>${i + 1}</td>
+                    <td>${app.fullName}<br><small style="color:#888;">ИИН: ${app.iin}</small></td>
+                    <td>${app.aidTitle}</td>
+                    <td>${new Date(app.createdAt).toLocaleDateString()}</td>
+                    <td><span class="badge ${s.cls}">${label}</span></td>
+                    <td class="action-buttons">
+                        <button class="btn btn-primary btn-sm" onclick="openModal(${app.id})">${I18N.t('adm_edit')}</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteApp(${app.id})">${I18N.t('adm_delete')}</button>
+                    </td>
+                </tr>`;
+            });
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        async function renderUsers() {
+            const res = await fetch('/api/users');
+            const users = await res.json();
+            const container = document.getElementById('users-list');
+            let html = `<div class="table-wrapper"><table><thead><tr>
+                <th>${I18N.t('adm_th_num')}</th><th>${I18N.t('adm_th_name')}</th>
+                <th>${I18N.t('adm_th_iin')}</th><th>${I18N.t('adm_th_email')}</th>
+                <th>${I18N.t('adm_th_phone')}</th><th>${I18N.t('adm_th_role')}</th>
+                <th>${I18N.t('adm_th_reg')}</th>
+            </tr></thead><tbody>`;
+            users.forEach((u, i) => {
+                const roleBadge = u.role === 'admin'
+                    ? `<span class="badge badge-danger">${I18N.t('adm_role_admin')}</span>`
+                    : `<span class="badge badge-info">${I18N.t('adm_role_user')}</span>`;
+                html += `<tr><td>${i+1}</td><td>${u.fullName}</td><td>${u.iin}</td><td>${u.email}</td><td>${u.phone}</td><td>${roleBadge}</td><td>${new Date(u.createdAt).toLocaleDateString()}</td></tr>`;
+            });
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        async function openModal(appId) {
+            const apps = await APPLICATIONS.getAll();
+            const app = apps.find(a => a.id === appId);
+            if (!app) return;
+            currentAppId = appId;
+            document.getElementById('modal-title').textContent = I18N.t('adm_modal_title');
+            document.getElementById('modal-content').innerHTML = `
+                <div class="info-box" style="margin-bottom:15px;">
+                    <strong>${I18N.t('adm_th_user')}:</strong> ${app.fullName}<br>
+                    <strong>ИИН:</strong> ${app.iin}<br>
+                    <strong>${I18N.t('about_phone_title')}:</strong> ${app.phone}<br>
+                    <strong>${I18N.t('apply_label_addr')}:</strong> ${app.address}<br>
+                    <strong>${I18N.t('apply_label_family')}:</strong> ${app.familySize}<br>
+                    <strong>${I18N.t('apply_label_income')}:</strong> ${app.income.toLocaleString()} ₸<br>
+                    <strong>${I18N.t('apply_label_aid')}:</strong> ${app.aidTitle}<br>
+                    <strong>${I18N.t('apply_label_reason')}:</strong> ${app.reason}
+                </div>
+            `;
+            document.querySelector('label[for="modal-status"], .form-group label').textContent = I18N.t('adm_modal_status');
+            document.getElementById('modal-status').value = app.status;
+            document.getElementById('modal-comment').value = app.adminComment || '';
+            document.getElementById('modal-comment').placeholder = I18N.t('adm_modal_ph');
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+            currentAppId = null;
+        }
+
+        async function saveStatus() {
+            const status = document.getElementById('modal-status').value;
+            const comment = document.getElementById('modal-comment').value;
+            await APPLICATIONS.updateStatus(currentAppId, status, comment);
+            closeModal();
+            await renderStats();
+            await renderApplications();
+            alert(I18N.t('adm_saved'));
+        }
+
+        async function deleteApp(id) {
+            if (confirm(I18N.t('adm_confirm_del'))) {
+                await APPLICATIONS.delete(id);
+                await renderStats();
+                await renderApplications();
+            }
+        }
+
+        const _origSetLang = I18N.setLang.bind(I18N);
+        I18N.setLang = function(lang) { _origSetLang(lang); renderStats(); renderApplications(); renderUsers(); };
+
+        // Табтар
+        document.querySelectorAll('.tab-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const tab = this.dataset.tab;
+                if (!tab) return;
+                
+                document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+                
+                this.classList.add('active');
+                document.getElementById('tab-' + tab).classList.remove('hidden');
+                
+                if (tab === 'users') renderUsers();
+            });
+        });
+
+        // Бастапқы
+        renderStats();
+        renderApplications();
+    </script>
+</body>
+</html>
